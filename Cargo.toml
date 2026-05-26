@@ -1,0 +1,17 @@
+[package]
+name = "lacam0-rs"
+version = "0.1.0"
+edition = "2024"
+authors = ["Ukuma012 <Ukuma012@gmail.com>"]
+description = "Rust port of Kei18/lacam0 — an anytime LaCAM-based multi-agent path finding (MAPF) solver"
+repository = "https://github.com/Ukuma012/lacam0-rs"
+readme = "README.md"
+license = "MIT"
+keywords = ["mapf", "lacam", "path-finding", "multi-agent"]
+categories = ["algorithms", "science"]
+
+[dependencies]
+clap = {version = "4.5.47", features = ["derive"]}
+regex = "1.11.1"
+thiserror = "2.0.18"
+rand = "0.9.2"
