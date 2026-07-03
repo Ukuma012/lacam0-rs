@@ -265,6 +265,12 @@ impl<'a> PIBT<'a> {
             return None;
         }
 
+        // agent wants to stay -> no need to swap
+        if vertex_id == q_from[agent_id] {
+            return None;
+        }
+
+        // usual swap situation 
         if let Some(j) = self.occupied_now[vertex_id] {
             let v_i = q_from[agent_id];
             let v_j = q_from[j];
@@ -273,30 +279,27 @@ impl<'a> PIBT<'a> {
                 && self.is_swap_required(agent_id, j, v_i, v_j, dist_table)
                 && self.is_swap_possible(v_j, v_i)
             {
-                Some(j)
-            } else {
-                None
+                return Some(j);
             }
-        } else {
-            // for clear operation
-            if vertex_id != q_from[agent_id] {
-                let current_vertex_id = q_from[agent_id];
-                let neighbors = self.instance.graph.get_neighbors(current_vertex_id);
+        }
 
-                for &u in neighbors {
-                    if let Some(k) = self.occupied_now[u] {
-                        if k != agent_id
-                            && vertex_id != q_from[k]
-                            && self.is_swap_required(k, agent_id, current_vertex_id, vertex_id, dist_table)
-                            && self.is_swap_possible(vertex_id, current_vertex_id)
-                        {
-                            return Some(k);
-                        }
-                    }
+        // for clear operation; checked even when the best vertex is occupied
+        let current_vertex_id = q_from[agent_id];
+        let neighbors = self.instance.graph.get_neighbors(current_vertex_id);
+
+        for &u in neighbors {
+            if let Some(k) = self.occupied_now[u] {
+                if k != agent_id
+                    && vertex_id != q_from[k]
+                    && self.is_swap_required(k, agent_id, current_vertex_id, vertex_id, dist_table)
+                    && self.is_swap_possible(vertex_id, current_vertex_id)
+                {
+                    return Some(k);
                 }
             }
-            None // no need to swap
         }
+
+        None // no need to swap
     }
 
     fn is_swap_required(&mut self, pusher: usize, puller: usize, v_pusher_origin: usize, v_puller_origin: usize, dist_table: &mut DistTable<'a>) -> bool {
