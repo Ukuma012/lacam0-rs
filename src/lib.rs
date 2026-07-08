@@ -26,6 +26,7 @@ pub enum Status {
 pub struct SolverOpts {
     pub star: bool,
     pub parallel_dist_init: bool,
+    pub compute_lb: bool,
 }
 
 impl Default for SolverOpts {
@@ -33,6 +34,7 @@ impl Default for SolverOpts {
         Self {
             star: false,
             parallel_dist_init: true,
+            compute_lb: true,
         }
     }
 }
@@ -56,11 +58,14 @@ pub fn solve(
     seed: u64,
     opts: &SolverOpts,
 ) -> SolveResult {
-    // Compute lower bounds first — excluded from comp_time_ms.
-    let mut dist_table_for_lb = DistTable::new_lazy(instance);
-    let makespan_lb = utils::get_makespan_lower_bound(instance, &mut dist_table_for_lb);
-    let soc_lb = utils::get_sum_of_costs_lower_bound(instance, &mut dist_table_for_lb);
-    drop(dist_table_for_lb);
+    let (makespan_lb, soc_lb) = if opts.compute_lb {
+        let mut dist_table_for_lb = DistTable::new_lazy(instance);
+        let makespan_lb = utils::get_makespan_lower_bound(instance, &mut dist_table_for_lb);
+        let soc_lb = utils::get_sum_of_costs_lower_bound(instance, &mut dist_table_for_lb);
+        (makespan_lb, soc_lb)
+    } else {
+        (0, 0)
+    };
 
     // Start the clock here — only the solve itself is timed.
     let deadline = Deadline::new((time_limit_sec * 1000.0) as f64);

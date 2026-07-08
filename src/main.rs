@@ -45,6 +45,7 @@ fn main() -> lacam0_rs::Result<()> {
     let opts = SolverOpts {
         star: args.star,
         parallel_dist_init: !args.no_dist_table_init,
+        compute_lb: true,
     };
     let result = solve(&instance, args.time_limit_sec, args.seed, &opts);
 
