@@ -1,5 +1,7 @@
 use std::collections::VecDeque;
 
+use rayon::prelude::*;
+
 use crate::{graph::Graph, instance::Instance};
 
 #[derive(Debug, Clone)]
@@ -25,6 +27,37 @@ impl<'a> DistTable<'a> {
             num_vertices: instance.graph.vertices.len(),
             table,
             open_queues,
+            graph: &instance.graph,
+        }
+    }
+
+    pub fn new_parallel(instance: &'a Instance) -> Self {
+        let num_vertices = instance.graph.vertices.len();
+        let max_dist = num_vertices as isize;
+        let mut table = vec![vec![max_dist; num_vertices]; instance.num_agents];
+
+        table
+            .par_iter_mut()
+            .zip(instance.goals.par_iter())
+            .for_each(|(row, &goal_id)| {
+                row[goal_id] = 0;
+                let mut queue = VecDeque::new();
+                queue.push_back(goal_id);
+                while let Some(current_vertex_id) = queue.pop_front() {
+                    let current_dist = row[current_vertex_id];
+                    for &neighbor_id in instance.graph.get_neighbors(current_vertex_id) {
+                        if current_dist + 1 < row[neighbor_id] {
+                            row[neighbor_id] = current_dist + 1;
+                            queue.push_back(neighbor_id);
+                        }
+                    }
+                }
+            });
+
+        Self {
+            num_vertices,
+            table,
+            open_queues: vec![VecDeque::new(); instance.num_agents],
             graph: &instance.graph,
         }
     }

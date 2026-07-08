@@ -25,6 +25,16 @@ pub enum Status {
 #[derive(Debug, Clone, Copy)]
 pub struct SolverOpts {
     pub star: bool,
+    pub parallel_dist_init: bool,
+}
+
+impl Default for SolverOpts {
+    fn default() -> Self {
+        Self {
+            star: false,
+            parallel_dist_init: true,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -54,7 +64,11 @@ pub fn solve(
 
     // Start the clock here — only the solve itself is timed.
     let deadline = Deadline::new((time_limit_sec * 1000.0) as f64);
-    let dist_table = DistTable::new_lazy(instance);
+    let dist_table = if opts.parallel_dist_init {
+        DistTable::new_parallel(instance)
+    } else {
+        DistTable::new_lazy(instance)
+    };
     let mut solver = LaCAM::new(instance, dist_table, deadline.clone(), seed, opts.star);
     let outcome = solver.solve();
     let comp_time_ms = deadline.elapsed_ms();

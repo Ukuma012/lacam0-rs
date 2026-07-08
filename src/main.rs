@@ -28,6 +28,9 @@ struct Args {
 
     #[arg(long, action = clap::ArgAction::SetTrue)]
     star: bool,
+
+    #[arg(long, action = clap::ArgAction::SetTrue)]
+    no_dist_table_init: bool,
 }
 
 
@@ -39,7 +42,10 @@ fn main() -> lacam0_rs::Result<()> {
         None => Instance::from_random(&args.map, args.num, args.seed)?,
     };
 
-    let opts = SolverOpts { star: args.star };
+    let opts = SolverOpts {
+        star: args.star,
+        parallel_dist_init: !args.no_dist_table_init,
+    };
     let result = solve(&instance, args.time_limit_sec, args.seed, &opts);
 
     print_summary(&result);
